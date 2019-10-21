@@ -1,4 +1,3 @@
-import json
 import requests
 
 
@@ -12,19 +11,19 @@ class DataHandler:
     @staticmethod
     def get_years():
         url = "http://westcost0.altervista.org/orari/api.php?w=getyears"
-        response = requests.get(url)
-        return json.loads(response.content)
+        response = requests.get(url).json()
+        return response
 
     @staticmethod
     def get_courses(year):
         url = "http://westcost0.altervista.org/orari/api.php?w=getcourses"
-        response = requests.get(url, {"year": year})
-        return json.loads(response.content)
+        response = requests.get(url, {"year": year}).json()
+        return response
 
     @staticmethod
     def get_timetable(uid):
-        response = requests.get(DataHandler.api_url, {"uid": uid})
-        return json.loads(response.content)
+        response = requests.get(DataHandler.api_url, {"uid": uid}).json()
+        return response
 
     @staticmethod
     def set_year(year, uid):

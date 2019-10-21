@@ -1,20 +1,27 @@
 import json
 import logging
-from _operator import abs
-from datetime import datetime
-
+import yaml
 import telegram
+
+from datetime import datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler
 from DataHandler import DataHandler
 
-updater = Updater(token='*TOKEN*', use_context=True)
-dispatcher = updater.dispatcher
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 year2data = {}
 value_label = {}
 timetable = None
+CONFIG_FILE = "config.yaml"
+TOKEN = None
+
+with open(CONFIG_FILE) as conf_file:
+    conf = yaml.load(conf_file, Loader=yaml.BaseLoader)
+    TOKEN = conf['token']
+
+updater = Updater(token=TOKEN, use_context=True)
+dispatcher = updater.dispatcher
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 
 def start(update, context):
@@ -93,13 +100,15 @@ def today(update, context):
     data = DataHandler.get_timetable(update.effective_chat.id)
     first_day = data["first_day"]
     day_difference = days_between(first_day, datetime.now().strftime("%d/%m/%Y"))
-    if day_difference > 5:
+    if day_difference == 5:
+        # convert day difference to respect array positions
         day_difference -= 1
-    # convert day difference to respect array positions
-    day_difference -= 1
+    elif day_difference == 6:
+        day_difference -= 1
+
     text = "*" + days[day_difference] + "*\n"
     for lesson in data["lezioni"]:
-        if int(lesson["giorno"]) == day_difference:
+        if int(lesson["giorno"]) == day_difference+1:
             text += get_lesson_text(lesson) + "\n\n"
     context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode=telegram.ParseMode.MARKDOWN)
 
